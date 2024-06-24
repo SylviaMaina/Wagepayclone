@@ -1,0 +1,12 @@
+// app global css in SCSS form
+// * {
+//   background: rgba(255, 255, 255, 1);
+// }
+h6,
+h2,
+h1 {
+  margin: 0;
+}
+:deep(span.q-btn__content) {
+  background-color: transparent !important;
+}
