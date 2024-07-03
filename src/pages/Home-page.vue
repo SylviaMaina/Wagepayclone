@@ -4,8 +4,8 @@
       <div>
         <h6>Top-up your wallet</h6>
       </div>
-      <q-input v-model="text" label="Amount" />
-      <q-select v-model="model" :options="options" label="Top-up From" />
+      <q-input v-model="amount" label="Amount" />
+      <q-select v-model="file" :options="source" label="Top-up From" />
       <div style="display: flex; justify-content: center">
         <q-btn
           rounded
@@ -13,6 +13,7 @@
           color="primary"
           text-color="white"
           size="14px"
+          @click="TopUp"
           class="q-mt-xl q-px-xl"
         />
       </div>
@@ -256,7 +257,7 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
-  <div class="full-width">
+  <div class="full-width" v-if="user">
     <div class="q-pa-lg bg-transparent">
       <div
         class="text-center bg-transparent flex column justify-evenly"
@@ -265,8 +266,12 @@
         <h6 class="text-subtitle1 text-weight-light bg-transparent">
           Available Amount
         </h6>
-        <h6 class="text-h4 text-weigh-thin bg-transparent">Kes 12,000</h6>
-        <h6 class="text-subtitle2 bg-transparent">Savings: ksh 12,000</h6>
+        <h6 class="text-h4 text-weigh-thin bg-transparent">
+          Kes {{ user.availableAmount }}
+        </h6>
+        <h6 class="text-subtitle2 bg-transparent">
+          Savings: ksh {{ user.savings }}
+        </h6>
       </div>
       <div>
         <q-tabs class="bg-transparent q-ma-sm">
@@ -307,25 +312,28 @@
           </div>
           <div>
             <h6 class="text-subtitle2 text-weight-light">
-              You are eligible for kes 50,000
+              You are eligible for kes {{ user.eligibleAdvance }}
             </h6>
             <div>
-              <q-slider
-                v-model="standard"
-                :min="0"
-                :max="50000"
-                track-size="10px"
+              <q-linear-progress
+                :value="user.borrowedAmount / user.eligibleAdvance"
+                color="primary"
+                track-color="black"
+                rounded
+                class="q-mt-sm"
+                track-size="8px"
+                size="12px"
               />
               <div class="flex justify-between">
                 <h6
                   class="text-subtitle2 text-black-2 q-mt-none text-weight-light"
                 >
-                  Borrowed {{ standard }}
+                  Borrowed {{ user.borrowedAmount }}
                 </h6>
                 <h6
                   class="text-subtitle2 text-black-2 q-mt-none text-weight-light"
                 >
-                  Available {{ remaining }}
+                  Available {{ user.availableCredit }}
                 </h6>
               </div>
               <h6 class="text-subtitle2 text-weight-bold">Due in 20 days</h6>
@@ -367,65 +375,90 @@
         <q-toolbar class="text-black">
           <q-toolbar-title>Transactions</q-toolbar-title>
         </q-toolbar>
-        <q-list>
-          <q-item>
+        <q-list v-if="user.transactions">
+          <q-item
+            v-for="(transaction, index) in user.transactions"
+            :key="index"
+          >
             <q-item-section top class="q-pa-none">
               <q-icon name="inbox" color="red" size="30px" />
             </q-item-section>
-
             <q-item-section>
-              <q-item-label>Electricity</q-item-label>
-              <q-item-label caption>12/07/2022</q-item-label>
+              <q-item-label>{{ transaction.type }}</q-item-label>
+              <q-item-label caption>{{ transaction.date }}</q-item-label>
             </q-item-section>
-
             <q-item-section>
-              <q-item-label>-ksh 200.00</q-item-label>
+              <q-item-label>-ksh {{ transaction.amount }}</q-item-label>
             </q-item-section>
           </q-item>
-          <q-item>
-            <q-item-section top class="q-pa-none">
-              <q-icon name="train" color="green" size="30px" />
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label>Transport</q-item-label>
-              <q-item-label caption>12/07/2022</q-item-label>
-            </q-item-section>
-
-            <q-item-section>
-              <q-item-label>-ksh 200.00</q-item-label>
-            </q-item-section>
-          </q-item></q-list
-        >
+        </q-list>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
+import { useUserStore } from "../store/user";
+import axios from "../axios";
 
-const standard = ref(2);
+const store = useUserStore();
+const user = ref(null);
+const loading = ref(false);
+const error = ref(null);
 const dialog = ref(false);
 const withdraw = ref(false);
-const group = ref(null);
 const radio = ref(false);
 const inception = ref(false);
 const secondDialog = ref(false);
 const authDialog = ref(false);
 const addCard = ref(false);
-const remaining = computed(() => 50000 - standard.value);
+const amount = ref();
+const file = ref(null);
 
-function show() {
+const TopUp = async () => {
+  try {
+    const response = await axios.post(
+      "/topup",
+
+      { userId: user.value.id, source: file.value, amount: amount.value },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    if (response.status === 200) {
+      console.log("Successful topup");
+    }
+  } catch (error) {
+    console.error("Error", error);
+  }
+};
+
+onMounted(async () => {
+  loading.value = true;
+  try {
+    await store.fetchUserProfile();
+    user.value = store.user;
+  } catch (err) {
+    error.value = err.message || "Failed to fetch user profile";
+  } finally {
+    loading.value = false;
+  }
+});
+
+const show = () => {
   dialog.value = true;
-}
-function withdraws() {
+};
+const withdraws = () => {
   withdraw.value = true;
-}
-function radios() {
+};
+const radios = () => {
   radio.value = true;
-}
-const options = ["Income", "Float", "Collection"];
+};
+
+const source = ["Income", "Float", "Collection"];
 const option = [
   {
     label: "Mobile",

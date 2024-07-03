@@ -43,6 +43,7 @@ const routes = [
         path: "/home",
         name: "Home",
         component: () => import("pages/Home-page.vue"),
+        meta: { requiresAuth: true },
       },
       {
         path: "/advance",

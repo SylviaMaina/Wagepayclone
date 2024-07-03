@@ -13,7 +13,7 @@
       >
         <div style="display: flex; width: 100%; justify-content: space-between">
           <q-input
-            v-model="text"
+            v-model="pin"
             placeholder="*"
             class="q-ml-sm text-center flex justify-center items-center"
           />
@@ -35,27 +35,52 @@
         </div>
         <h6 class="text-subtitle1 text-center text-yellow-10">Resend code</h6>
         <div class="flex justify-center">
-          <router-link to="/login" style="text-decoration: none">
-            <q-btn
-              style="
-                background-color: rgba(231, 199, 37, 1);
-                border-radius: 30rem;
-                width: 15rem;
-                height: 3rem;
-              "
-              class="q-h-14 align-center q-rounded-xl text-white q-max-w-lg:h-12 q-max-w-lg:mb-5"
-              size="18px"
-            >
-              Continue
-            </q-btn>
-          </router-link>
+          <q-btn
+            style="
+              background-color: rgba(231, 199, 37, 1);
+              border-radius: 30rem;
+              width: 15rem;
+              height: 3rem;
+            "
+            @click="setPin"
+            class="q-h-14 align-center q-rounded-xl text-white q-max-w-lg:h-12 q-max-w-lg:mb-5"
+            size="18px"
+          >
+            Continue
+          </q-btn>
         </div>
       </q-form>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import axios from "axios";
+import { ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+
+const route = useRoute();
+const router = useRouter();
+const pin = ref("");
+
+const setPin = async () => {
+  try {
+    const userId = route.query.id;
+    const res = await axios.patch(
+      `http://localhost:3000/auth/users/${userId}`,
+      { pin: pin.value }
+    );
+    if (res.status === 200) {
+      console.log("Pin set successfully");
+      router.push("/login");
+    } else {
+      console.log("Something went wrong");
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+</script>
 
 <style lang="scss" scoped>
 .q-input {

@@ -1,62 +1,37 @@
 <script setup>
-import { ref, watch } from "vue";
-import axios from "axios";
-import { Loading } from "quasar";
+import { useUserStore } from "src/store/user";
+import axios from "../../axios";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
-const isLoggedIn = ref(false);
-const email = ref("");
-const password = ref("");
+
 const router = useRouter();
-const error = ref(false);
-const session = ref("");
-const progressOTP = ref(false);
+
+const email = ref("");
+const pin = ref("");
+const userStore = useUserStore();
 
 const HandleLogin = async () => {
-  Loading.show();
   try {
-    const response = await axios.post(
-      "https://dev.mywagepay.com/api/v1/auth/login",
-      { email: email.value, password: password.value }
-    );
-    const data = response.data;
+    const response = await axios.post("/login", {
+      email: email.value,
+      pin: pin.value,
+    });
 
-    console.log(data);
-
-    if (data.status === 200) {
-      Loading.hide();
-      session.value = data.data.login_id;
-      progressOTP.value = true;
-      isLoggedIn.value = true;
+    if (response.status === 200) {
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      userStore.token = token; //ensure the token is set in the store
+      await userStore.fetchUserProfile(); //fetch user profile
+      router.push("/home");
     } else {
-      error.value = true;
-      Loading.hide();
+      console.log("Something went wrong");
     }
-  } catch (err) {
-    console.error("Error:", err);
-    error.value = true;
-    Loading.hide();
-  }
-};
-
-watch([progressOTP, session], ([newProgressOtp, newSession]) => {
-  if (isLoggedIn.value && newProgressOtp && newSession) {
-    router.push(`/verify?authcode=${newSession}`);
-  }
-});
-
-const dismissError = () => {
-  error.value = false;
+  } catch (error) {}
 };
 </script>
 
 <template>
   <div>
-    <q-banner v-if="error" class="bg-primary text-white">
-      Unfortunately, the login attempt was unsuccessful, please try again.
-      <template v-slot:action>
-        <q-btn flat color="white" label="Dismiss" @click="dismissError" />
-      </template>
-    </q-banner>
     <div class="q-ma-lg">
       <h2 class="text-h5 text-weight-medium">Login</h2>
       <h6 class="text-subtitle2 text-weight-light q-mt-lg">
@@ -74,7 +49,7 @@ const dismissError = () => {
           type="email"
           placeholder="example@email.com"
         />
-        <q-input v-model="password" label="Pin" placeholder="*****" />
+        <q-input v-model="pin" label="Pin" placeholder="*****" />
         <h6 class="text-subtitle1">
           Forgot your pin? <span class="text-yellow-10">RESET PIN</span>
         </h6>

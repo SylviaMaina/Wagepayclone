@@ -1,0 +1,68 @@
+{
+  "users": [
+    {
+      "id": "5074e2ad-45af-47f3-9abc-5b9b1bae9491",
+      "email": "sylviamaina16@gmail.com",
+      "idNumber": "32793275",
+      "phoneNumber": "0721943588",
+      "pin": "$2a$10$7b188V2WxivJA1Sc4MWVaeEz4z0oMvcU1NrhcMMK9xiQK9IYntFZ6",
+      "name": "Sylvia Maina",
+      "profilePictureUrl": "https://example.com/profile.jpg",
+      "availableAmount": 17000,
+      "savings": 12000,
+      "eligibleAdvance": 50000,
+      "borrowedAmount": 21083,
+      "availableCredit": 28917,
+      "dueDate": "2024-07-22",
+      "transactions": [
+        {
+          "id": "1",
+          "type": "Electricity",
+          "date": "2024-07-01",
+          "amount": -200
+        },
+        {
+          "id": "2",
+          "type": "Transport",
+          "date": "2024-07-01",
+          "amount": -200
+        },
+        {
+          "id": "3",
+          "type": "Float",
+          "date": "2024-07-03",
+          "amount": "2000"
+        }
+      ],
+      "topUpOptions": [
+        {
+          "id": "1",
+          "label": "Income",
+          "description": "Your monthly income"
+        },
+        {
+          "id": "2",
+          "label": "Float",
+          "description": "Funds added from float"
+        },
+        {
+          "id": "3",
+          "label": "Collection",
+          "description": "Collected funds"
+        }
+      ],
+      "withdrawOptions": [
+        {
+          "id": "1",
+          "label": "Mobile",
+          "description": "Withdraw to mobile money"
+        },
+        {
+          "id": "2",
+          "label": "Card A",
+          "description": "Withdraw to Card A"
+        }
+      ]
+    }
+  ]
+}
