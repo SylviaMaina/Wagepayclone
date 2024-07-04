@@ -166,7 +166,8 @@ router.post("/topup", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Missing required fields" });
   }
 
-  if (amount <= 0) {
+  const amountNumber = parseFloat(amount);
+  if (isNaN(amountNumber) || amountNumber <= 0) {
     return res.status(400).json({ message: "Invalid amount" });
   }
 
@@ -180,18 +181,115 @@ router.post("/topup", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "User not found" });
   }
 
-  user.availableAmount += amount;
+  user.availableAmount = parseFloat(user.availableAmount) + amountNumber;
   user.transactions.push({
     id: `${user.transactions.length + 1}`,
     type: source,
     date: new Date().toISOString().split("T")[0],
-    amount: amount,
+    amount: amountNumber,
   });
 
   await writeDB(db);
 
   res.json({
     message: "Top up successful",
+    user,
+  });
+});
+
+//Withdraw route
+router.post("/withdraw", verifyToken, async (req, res) => {
+  const { userId, amount, source } = req.body;
+
+  if (!userId || !amount || !source) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const amountNumber = parseFloat(amount);
+  if (isNaN(amountNumber) || amountNumber <= 0) {
+    return res.status(400).json({ message: "Invalid amount" });
+  }
+
+  const db = await readDB();
+  if (!db) {
+    return res.status(500).json({ message: "Could not read the database" });
+  }
+
+  const user = db.users.find((user) => user.id === userId);
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  user.availableAmount = parseFloat(user.availableAmount) - amountNumber;
+  user.transactions.push({
+    id: `${user.transactions.length + 1}`,
+    type: source,
+    date: new Date().toISOString().split("T")[0],
+    amount: amountNumber,
+  });
+
+  await writeDB(db);
+
+  res.json({
+    message: "Top up successful",
+    user,
+  });
+});
+
+//Pay loan route
+router.post("/pay", verifyToken, async (req, res) => {
+  const { userId, amount, source, advanceId } = req.body;
+
+  if (!userId || !amount || !source || !advanceId) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const amountNumber = parseFloat(amount);
+  if (isNaN(amountNumber) || amountNumber <= 0) {
+    return res.status(400).json({ message: "Invalid amount" });
+  }
+
+  const db = await readDB();
+  if (!db) {
+    return res.status(500).json({ message: "Could not read the database" });
+  }
+
+  const user = db.users.find((user) => user.id === userId);
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  const advance = user.salaryAdvances.find(
+    (adv) => adv.advanceId === advanceId
+  );
+  if (!advance) {
+    return res.status(400).json({ message: "Advance not found" });
+  }
+
+  if (amountNumber > advance.remainingAmount) {
+    return res
+      .status(400)
+      .json({ message: "Repayment amount exceeds remaining advance amount" });
+  }
+
+  advance.remainingAmount -= amountNumber;
+  advance.repayments.push({
+    repaymentId: `${advance.repayments.length + 1}`,
+    date: new Date().toISOString().split("T")[0],
+    amount: amountNumber,
+  });
+
+  user.transactions.push({
+    id: `${user.transactions.length + 1}`,
+    type: source,
+    date: new Date().toISOString().split("T")[0],
+    amount: amountNumber,
+  });
+
+  await writeDB(db);
+
+  res.json({
+    message: "Repayment successful",
     user,
   });
 });

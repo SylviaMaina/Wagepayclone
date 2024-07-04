@@ -1,11 +1,26 @@
 import axios from "axios";
 import router from "./router/index";
-import { useUserStore } from "./store/user"; // Ensure correct import path
+import { useUserStore } from "./store/user";
 
 const api = axios.create({
   baseURL: "http://localhost:3000/auth", // Adjust baseURL according to your API endpoint
 });
 
+// Add a request interceptor to include Bearer token in headers
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor for handling 401 Unauthorized errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {

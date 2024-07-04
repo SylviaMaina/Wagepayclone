@@ -8,11 +8,11 @@
       "pin": "$2a$10$7b188V2WxivJA1Sc4MWVaeEz4z0oMvcU1NrhcMMK9xiQK9IYntFZ6",
       "name": "Sylvia Maina",
       "profilePictureUrl": "https://example.com/profile.jpg",
-      "availableAmount": 17000,
+      "availableAmount": 18000,
       "savings": 12000,
       "eligibleAdvance": 50000,
-      "borrowedAmount": 21083,
-      "availableCredit": 28917,
+      "borrowedAmount": 20000,
+      "availableCredit": 30000,
       "dueDate": "2024-07-22",
       "transactions": [
         {
@@ -31,36 +31,46 @@
           "id": "3",
           "type": "Float",
           "date": "2024-07-03",
-          "amount": "2000"
+          "amount": 2000
+        },
+        {
+          "id": "4",
+          "type": "Collection",
+          "date": "2024-07-04",
+          "amount": 2000
+        },
+        {
+          "id": "5",
+          "type": "Income",
+          "date": "2024-07-04",
+          "amount": 500
+        },
+        {
+          "id": "6",
+          "type": "Card A",
+          "date": "2024-07-04",
+          "amount": 2000
+        },
+        {
+          "id": "7",
+          "type": "Mobile",
+          "date": "2024-07-04",
+          "amount": 1083
         }
       ],
-      "topUpOptions": [
+      "salaryAdvances": [
         {
-          "id": "1",
-          "label": "Income",
-          "description": "Your monthly income"
-        },
-        {
-          "id": "2",
-          "label": "Float",
-          "description": "Funds added from float"
-        },
-        {
-          "id": "3",
-          "label": "Collection",
-          "description": "Collected funds"
-        }
-      ],
-      "withdrawOptions": [
-        {
-          "id": "1",
-          "label": "Mobile",
-          "description": "Withdraw to mobile money"
-        },
-        {
-          "id": "2",
-          "label": "Card A",
-          "description": "Withdraw to Card A"
+          "advanceId": "1",
+          "amount": 5000,
+          "dueDate": "2024-08-01",
+          "remainingAmount": 3000,
+          "repayments": [
+            {
+              "repaymentId": "1",
+              "date": "2024-07-05",
+              "amount": 2000
+            }
+          ]
         }
       ]
     }

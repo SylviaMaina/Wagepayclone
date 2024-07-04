@@ -1,68 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
-      <q-dialog v-model="prompt" position="bottom">
-        <q-card
-          style="
-            min-width: 350px;
-            height: 40rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-evenly;
-          "
-        >
-          <q-card-header>
-            <h6 class="text-h5 q-pl-sm">Salary advance request form</h6>
-            <h6 class="text-grey-7 q-pl-sm" style="font-size: small">
-              Please note that this amount will be automatically deducted from
-              your next salary
-            </h6>
-          </q-card-header>
-
-          <q-card-section
-            class="q-pt-none flex column justify-between"
-            style="height: 8rem"
-          >
-            <q-input
-              dense
-              v-model="amount"
-              label="Amount"
-              placeholder="Ksh 1000"
-              autofocus
-              @keyup.enter="prompt = false"
-            />
-            <q-input
-              dense
-              v-model="payable"
-              label="Payable by"
-              placeholder="11/11/2024"
-              autofocus
-              @keyup.enter="prompt = false"
-            />
-          </q-card-section>
-          <q-card-section>
-            <q-toggle
-              label="Autodeduct"
-              color="primary"
-              class="q-ma-none q-pa-none"
-            />
-            <h6 class="text-grey-7 q-pl-sm" style="font-size: small">
-              This will automatically deduct your loan from your card
-            </h6>
-          </q-card-section>
-          <q-card-actions align="center" class="text-primary">
-            <q-btn
-              rounded
-              size="10px"
-              class="q-pa-xl"
-              style="width: 10rem; height: 2rem; font-size: 1rem"
-              color="primary"
-              label="Submit"
-              v-close-popup
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
+      <RequestForm v-model:modelValue="prompt" />
       <q-header class="bg-grey-1 q-pa-sm">
         <q-toolbar class="flex justify-between">
           <div class="flex items-center">
@@ -158,7 +97,7 @@
           </q-item>
         </q-tabs>
         <q-page-sticky position="bottom-top" :offset="[-30, -30]">
-          <q-fab icon="add" color="primary" @click="onClick"> </q-fab>
+          <q-fab icon="add" color="primary" @click="requestAdvance"> </q-fab>
         </q-page-sticky>
       </q-footer>
     </q-page-container>
@@ -166,12 +105,38 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import RequestForm from "../components/Request-form.vue";
+import { useUserStore } from "src/store/user";
+import { useQuasar } from "quasar";
 
 const prompt = ref(false);
-function onClick() {
-  prompt.value = !prompt.value;
-}
+const store = useUserStore();
+const user = ref(null);
+const $q = useQuasar();
+
+onMounted(async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.user;
+  } catch (error) {
+    console.log("Error", error);
+  }
+});
+const requestAdvance = async () => {
+  try {
+    if (user.value.salaryAdvances.remainingAmount != 0) {
+      $q.notify({
+        type: "negative",
+        message: "Please clear existing loan to request a new one",
+      });
+    } else {
+      prompt.value = true;
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
 </script>
 
 <style scoped>

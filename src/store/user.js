@@ -11,11 +11,7 @@ export const useUserStore = defineStore("user", {
     async fetchUserProfile() {
       try {
         this.loading = true;
-        const response = await axios.get("/profile", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axios.get("/profile");
         this.user = response.data.user;
       } catch (error) {
         console.error("Error fetching user profile:", error);

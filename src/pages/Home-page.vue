@@ -22,11 +22,11 @@
   <q-dialog v-model="withdraw" position="bottom">
     <q-card class="q-pa-lg">
       <div>
-        <h6>Available: 10,000</h6>
+        <h6>Available: {{ user.availableAmount }}</h6>
       </div>
-      <q-input v-model="text" label="Amount" placeholder="Ksh 1,000" />
+      <q-input v-model="WAmount" label="Amount" placeholder="Ksh 1,000" />
       <q-select
-        v-model="model"
+        v-model="WOption"
         :options="option"
         label="Withdraw to"
         color="teal"
@@ -48,6 +48,7 @@
         <q-btn
           rounded
           label="Withdraw"
+          @click="Withdraw"
           color="primary"
           text-color="white"
           size="14px"
@@ -118,7 +119,7 @@
       </q-card-section>
       <q-card-section align="center">
         <h6 class="text-subtitle2 text-grey-9">Total</h6>
-        <h6 class="text-h6 text-weight-semibold">Ksh 50,000</h6>
+        <h6 class="text-h6 text-weight-semibold">Ksh 70,000</h6>
       </q-card-section>
 
       <q-card-actions align="center">
@@ -308,7 +309,9 @@
         <q-card-section class="my-card">
           <div class="flex justify-between">
             <h6>Request Advance</h6>
-            <q-icon name="add" size="30px" />
+            <Router-link to="/advance">
+              <q-icon name="add" size="30px"
+            /></Router-link>
           </div>
           <div>
             <h6 class="text-subtitle2 text-weight-light">
@@ -398,10 +401,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useUserStore } from "../store/user";
 import axios from "../axios";
+import { useQuasar } from "quasar";
 
+const $q = useQuasar();
 const store = useUserStore();
 const user = ref(null);
 const loading = ref(false);
@@ -413,29 +418,68 @@ const inception = ref(false);
 const secondDialog = ref(false);
 const authDialog = ref(false);
 const addCard = ref(false);
-const amount = ref();
+const amount = ref(0);
 const file = ref(null);
+const WAmount = ref(0);
+const WOption = ref(null);
 
 const TopUp = async () => {
   try {
+    const formattedAmount = parseFloat(amount.value);
+
+    // Check if amount is a valid number
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      $q.notify({ type: "negative", message: "Invalid amount!" });
+      return;
+    }
+
     const response = await axios.post(
       "/topup",
 
-      { userId: user.value.id, source: file.value, amount: amount.value },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
+      { userId: user.value.id, source: file.value, amount: formattedAmount }
     );
     if (response.status === 200) {
-      console.log("Successful topup");
+      dialog.value = false;
+      user.value.availableAmount = response.data.user.availableAmount;
+      user.value.transactions = response.data.user.transactions;
+      $q.notify({ type: "positive", message: "Top-up successful!" });
     }
   } catch (error) {
     console.error("Error", error);
+    $q.notify({ type: "negative", message: "Top-up failed!" });
   }
 };
 
+const Withdraw = async () => {
+  try {
+    const formattedAmount = parseFloat(WAmount.value);
+
+    // Check if amount is a valid number
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      $q.notify({ type: "negative", message: "Invalid amount!" });
+      return;
+    }
+
+    const response = await axios.post(
+      "/withdraw",
+
+      {
+        userId: user.value.id,
+        source: WOption.value.label,
+        amount: formattedAmount,
+      }
+    );
+    if (response.status === 200) {
+      withdraw.value = false;
+      user.value.availableAmount = response.data.user.availableAmount;
+      user.value.transactions = response.data.user.transactions;
+      $q.notify({ type: "positive", message: "Top-up successful!" });
+    }
+  } catch (error) {
+    console.error("Error", error);
+    $q.notify({ type: "negative", message: "Top-up failed!" });
+  }
+};
 onMounted(async () => {
   loading.value = true;
   try {

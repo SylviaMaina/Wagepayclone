@@ -1,5 +1,6 @@
 <template>
-  <div class="q-pa-md">
+  <RequestForm v-model:modelValue="prompt" />
+  <div class="q-pa-md" v-if="user">
     <div class="q-pa-md flex flex-center">
       <q-knob
         show-value
@@ -21,10 +22,14 @@
           "
         >
           <h6 class="text-subtitle2 text-grey-8 q-mb-sm">
-            30,000 credit available
+            {{ user.availableCredit }} Credit available
           </h6>
-          <h6 class="text-h4 text-bold text-primary">20%</h6>
-          <h6 class="text-subtitle2 text-grey-8 q-mt-sm">10,000 Credited</h6>
+          <h6 class="text-h4 text-bold text-primary">
+            {{ value.toFixed(0) }}%
+          </h6>
+          <h6 class="text-subtitle2 text-grey-8 q-mt-sm">
+            {{ user.borrowedAmount }} Credited
+          </h6>
         </div>
       </q-knob>
     </div>
@@ -34,6 +39,7 @@
           name="Borrow"
           icon="payments"
           label="Borrow"
+          @click="requestAdvance"
           class="text-grey-8 bg-transparent"
         />
 
@@ -41,6 +47,7 @@
           name="Pay"
           icon="payments"
           label="Pay"
+          @click="pay = true"
           class="text-grey-8 bg-transparent"
         />
 
@@ -75,17 +82,131 @@
       ></q-table>
     </div>
   </div>
+  <q-dialog v-model="pay" position="bottom">
+    <q-card class="q-pa-lg">
+      <div>
+        <h6>Total Credit: {{ user.borrowedAmount }}</h6>
+      </div>
+      <q-input v-model="WAmount" label="Amount" placeholder="Ksh 1,000" />
+      <q-select
+        v-model="WOption"
+        :options="option"
+        label="Pay from"
+        color="teal"
+        clearable
+        options-selected-class="text-deep-orange"
+      >
+        <template v-slot:option="scope">
+          <q-item v-bind="scope.itemProps">
+            <q-item-section avatar>
+              <q-icon :name="scope.opt.icon" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label>{{ scope.opt.label }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
+      <div style="display: flex; justify-content: center">
+        <q-btn
+          rounded
+          label="Pay Credit"
+          @click="PayLoan"
+          color="primary"
+          text-color="white"
+          size="14px"
+          class="q-mt-xl q-px-xl"
+        />
+      </div>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useQuasar } from "quasar";
+import axios from "../axios";
+import { useUserStore } from "../store/user";
+import { onMounted, ref } from "vue";
+import RequestForm from "src/components/Request-form.vue";
 
 // Percentage value of the progress bar
-const value = 20;
+const store = useUserStore();
+const prompt = ref(false);
 const toggle = ref(true);
 const filter = ref("");
 const label = "Auto-deduct";
+const user = ref(null);
+const pay = ref(false);
+const WAmount = ref();
+const WOption = ref();
+const $q = useQuasar();
 
+onMounted(async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.user;
+  } catch (error) {
+    console.log("Error", error);
+  }
+});
+
+const requestAdvance = async () => {
+  try {
+    if (user.value.salaryAdvances.remainingAmount != 0) {
+      $q.notify({
+        type: "negative",
+        message: "Please clear existing loan to request a new one",
+      });
+    } else {
+      prompt.value = true;
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+const PayLoan = async () => {
+  try {
+    const formattedAmount = parseFloat(WAmount.value);
+
+    // Check if amount is a valid number
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      $q.notify({ type: "negative", message: "Invalid amount!" });
+      return;
+    }
+
+    const advanceId =
+      user.value.salaryAdvances && user.value.salaryAdvances.length > 0
+        ? user.value.salaryAdvances[0].advanceId
+        : null;
+
+    if (!advanceId) {
+      $q.notify({
+        type: "negative",
+        message: "No advance found for the user!",
+      });
+      return;
+    }
+
+    const response = await axios.post("/pay", {
+      userId: user.value.id,
+      source: WOption.value.label,
+      amount: formattedAmount,
+      advanceId: advanceId,
+    });
+
+    if (response.status === 200) {
+      $q.notify({ type: "positive", message: "Advance paid successfully" });
+      user.value.borrowedAmount = response.data.user.borrowedAmount;
+      user.value.availableCredit = response.data.user.availableCredit;
+      pay.value = false;
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+const value = (store.user.borrowedAmount / store.user.eligibleAdvance) * 100;
 const columns = [
   {
     name: "Requested",
@@ -136,6 +257,21 @@ const rows = [
     Approved: 356,
     Paid: 16.0,
     Actions: 49,
+  },
+];
+
+const option = [
+  {
+    label: "Mobile",
+    value: "Mobile",
+    description: "Enter amount you with to withdraw",
+    icon: "money",
+  },
+  {
+    label: "Card A",
+    value: "CardA",
+    description: "Choose the card you wish to use",
+    icon: "payments",
   },
 ];
 </script>
