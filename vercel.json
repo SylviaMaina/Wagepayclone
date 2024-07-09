@@ -1,0 +1,17 @@
+{
+  "builds": [
+    {
+      "src": "src/**/*.vue",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/spa"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

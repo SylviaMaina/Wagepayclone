@@ -42,6 +42,7 @@ module.exports = configure(function (/* ctx */) {
       target: {
         browser: ["es2019", "edge88", "firefox78", "chrome87", "safari13.1"],
         node: "node20",
+        distDir: "dist/spa",
       },
 
       vueRouterMode: "hash", // available values: 'hash', 'history'
