@@ -1,7 +1,8 @@
 {
+  "version": 2,
   "builds": [
     {
-      "src": "src/**/*.vue",
+      "src": "quasar.conf.js",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist/spa"
