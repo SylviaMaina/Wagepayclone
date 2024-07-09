@@ -33,6 +33,7 @@
           dense
           v-model="payable"
           label="Payable by"
+          type="date"
           placeholder="11/11/2024"
           autofocus
           @keyup.enter="prompt = false"
@@ -56,7 +57,7 @@
           style="width: 10rem; height: 2rem; font-size: 1rem"
           color="primary"
           label="Submit"
-          v-close-popup
+          @click="RequestLoan"
         />
       </q-card-actions>
     </q-card>
@@ -64,7 +65,72 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from "vue";
+import { date, useQuasar } from "quasar";
+import axios from "../axios";
+import { useUserStore } from "src/store/user";
+import { ref, watch, defineProps, defineEmits, onMounted } from "vue";
+
+const store = useUserStore();
+const user = ref(null);
+const amount = ref(null);
+const payable = ref(null);
+const prompt = ref(false);
+const $q = useQuasar();
+
+const fetchUserInfo = async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.currentUser;
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+onMounted(fetchUserInfo);
+
+const RequestLoan = async () => {
+  try {
+    const formattedAmount = parseFloat(amount.value);
+
+    // Check if amount is a valid number
+    if (isNaN(formattedAmount) || formattedAmount <= 0) {
+      $q.notify({ type: "negative", message: "Invalid amount!" });
+      return;
+    }
+
+    const advanceId =
+      user.value.salaryAdvances && user.value.salaryAdvances.length > 0
+        ? user.value.salaryAdvances[0].advanceId
+        : null;
+
+    if (!advanceId) {
+      $q.notify({
+        type: "negative",
+        message: "No advance found for the user!",
+      });
+      return;
+    }
+    const response = await axios.post("/request", {
+      userId: user.value.id,
+      amount: amount.value,
+      date: payable.value,
+      advanceId: advanceId,
+    });
+    if (response.status === 200) {
+      $q.notify({
+        type: "positive",
+        message: "Advance requested successfully",
+      });
+      await fetchUserInfo();
+      prompt.value = false;
+    } else {
+      $q.notify({ type: "negative", message: "Something went " });
+      prompt.value = false;
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
 
 const props = defineProps({
   modelValue: {
@@ -74,19 +140,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
-
-const amount = ref("");
-const payable = ref("");
-const prompt = ref(props.modelValue);
-
-const submitForm = () => {
-  // Logic to handle form submission
-  console.log("Amount:", amount.value);
-  console.log("Payable by:", payable.value);
-
-  // Close the dialog after submission
-  prompt.value = false;
-};
 
 // Watch for changes in prop and update the local state accordingly
 watch(

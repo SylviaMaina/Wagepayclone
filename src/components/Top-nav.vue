@@ -44,7 +44,7 @@
             </q-popup-proxy>
           </q-avatar>
           <h6 class="text-grey-9 text-subtitle2 q-pl-lg">
-            Hello, {{ user.name }}
+            Hello, {{ user.email }}
           </h6>
         </div>
 
@@ -66,7 +66,7 @@ const router = useRouter();
 onMounted(async () => {
   try {
     await store.fetchUserProfile();
-    user.value = store.user;
+    user.value = store.currentUser;
   } catch (error) {
     console.error("Error", error);
   }

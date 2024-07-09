@@ -29,10 +29,10 @@
             </h6>
           </q-card-section>
           <div class="q-ma-none q-px-none">
-            <q-radio val="line" label="3- upto 9%" />
-            <q-radio val="rectangle" label="6- upto 6%" />
-            <q-radio val="ellipse" label="9- upto 7%" />
-            <q-radio val="polygon" label="12- upto 8%" />
+            <q-radio v-model="interest" val="3" label="3- upto 9%" />
+            <q-radio v-model="interest" val="6" label="6- upto 6%" />
+            <q-radio v-model="interest" val="9" label="9- upto 7%" />
+            <q-radio v-model="interest" val="12" label="12- upto 8%" />
           </div>
           <q-card-actions
             class="bg-white text-primary flex justify-between q-my-lg"
@@ -66,7 +66,7 @@
               color="primary"
               label="Continue"
               v-close-popup
-              @click="secondDialog = true"
+              @click="nextStep"
             />
           </q-card-actions>
         </q-card>
@@ -77,14 +77,16 @@
             <h6>Emergency Goal</h6>
           </q-card-header>
           <q-card-section class="q-px-none">
-            <h6 class="text-subtitle2 text-grey-9">
-              What is your emergency goal?
-            </h6>
-            <q-input label="Emergency" hint="eg. School fees" />
+            <h6 class="text-subtitle2 text-grey-9">What is your goal name?</h6>
+            <q-input
+              label="Emergency"
+              v-model="goalName"
+              hint="eg. School fees"
+            />
             <h6 class="text-subtitle2 text-grey-9">
               How much do you want to save monthly?
             </h6>
-            <q-input hint="1,000" />
+            <q-input hint="1,000" v-model="targetAmount" />
           </q-card-section>
           <q-card-section class="q-px-none">
             <q-item class="bg-warning">
@@ -96,8 +98,12 @@
                 />
               </q-item-section>
               <q-item-section>
-                <q-item-label>Your savings target is</q-item-label>
-                <q-item-label caption lines="2">Ksh 3,000.</q-item-label>
+                <q-item-label
+                  >Your savings target name is {{ goalName }}</q-item-label
+                >
+                <q-item-label caption lines="2"
+                  >Ksh{{ targetAmount }}.</q-item-label
+                >
               </q-item-section>
             </q-item>
           </q-card-section>
@@ -132,11 +138,7 @@
               color="primary"
               label="Continue"
               v-close-popup
-              @click="
-                dialog = false;
-                secondDialog = false;
-                prompt = true;
-              "
+              @click="stepTwo"
             />
           </q-card-actions>
         </q-card>
@@ -158,7 +160,7 @@
           "
         >
           <q-card-header>
-            <h6 class="text-h5 q-pl-sm">Emergency Goal</h6>
+            <h6 class="text-h5 q-pl-sm">{{ goalName }}</h6>
           </q-card-header>
 
           <q-card-section
@@ -167,33 +169,7 @@
             ><h6 class="text-grey-7 q-pl-sm" style="font-size: small">
               When would you like to start saving?
             </h6>
-            <q-input
-              v-model="date"
-              mask="date"
-              :rules="['date']"
-              class="q-px-sm"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="date">
-                      <div class="row items-center justify-end">
-                        <q-btn
-                          v-close-popup
-                          label="Close"
-                          color="primary"
-                          flat
-                        />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            <q-input v-model="date" type="date" class="q-px-sm" />
           </q-card-section>
 
           <q-card-actions
@@ -226,18 +202,13 @@
               color="primary"
               label="Continue"
               v-close-popup
-              @click="
-                dialog = false;
-                secondDialog = false;
-                prompt = false;
-                reminder = true;
-              "
+              @click="stepThree"
             />
           </q-card-actions>
         </q-card>
       </q-dialog>
       <q-dialog
-        v-model="reminder"
+        v-model="createReminder"
         position="bottom"
         transition-show="fade"
         transition-hide="fade"
@@ -253,47 +224,21 @@
           "
         >
           <q-card-header>
-            <h6 class="text-h5 q-pl-sm">Emergency Goal</h6>
+            <h6 class="text-h5 q-pl-sm">{{ goalName }}</h6>
           </q-card-header>
 
-          <q-card-section class="q-pt-none" style="height: rem"
-            ><h6 class="text-grey-7" style="font-size: small">
+          <q-card-section class="q-pt-none" style="height: rem">
+            <h6 class="text-grey-7" style="font-size: small">
               Would you like to set a reminder?
             </h6>
             <q-toggle
               keep-color
-              v-model="toggle"
+              v-model="setReminder"
               color="primary"
               switch-label
               class="q-mt-lg"
             />
-            <q-input
-              v-model="date"
-              mask="date"
-              :rules="['date']"
-              class="q-px-sm"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="date">
-                      <div class="row items-center justify-end">
-                        <q-btn
-                          v-close-popup
-                          label="Close"
-                          color="primary"
-                          flat
-                        />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            <q-input v-model="date" class="q-px-sm" />
           </q-card-section>
 
           <q-card-actions
@@ -326,12 +271,7 @@
               color="primary"
               label="Continue"
               v-close-popup
-              @click="
-                dialog = false;
-                secondDialog = false;
-                prompt = false;
-                card = true;
-              "
+              @click="stepFour"
             />
           </q-card-actions>
         </q-card>
@@ -353,48 +293,26 @@
           "
         >
           <q-card-header>
-            <h6 class="text-h5 q-pl-sm">Emergency Goal</h6>
+            <h6 class="text-h5 q-pl-sm">{{ goalName }}</h6>
           </q-card-header>
 
-          <q-card-section class="q-pt-none" style="height: rem"
+          <q-card-section class="q-pt-none"
             ><h6 class="text-grey-7" style="font-size: small">
               Would you like your saving automatically deducted from card?
             </h6>
             <q-toggle
               keep-color
-              v-model="toggle"
+              v-model="deduct"
               color="primary"
               switch-label
               class="q-mt-lg"
             />
             <q-input
-              v-model="date"
-              mask="date"
-              :rules="['date']"
+              v-model="deductDate"
+              type="date"
               class="q-px-sm"
               hint="Input the deduction date"
-            >
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy
-                    cover
-                    transition-show="scale"
-                    transition-hide="scale"
-                  >
-                    <q-date v-model="date">
-                      <div class="row items-center justify-end">
-                        <q-btn
-                          v-close-popup
-                          label="Close"
-                          color="primary"
-                          flat
-                        />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
-              </template>
-            </q-input>
+            />
           </q-card-section>
 
           <q-card-actions
@@ -427,12 +345,7 @@
               color="primary"
               label="Continue"
               v-close-popup
-              @click="
-                dialog = false;
-                secondDialog = false;
-                prompt = false;
-                summary = true;
-              "
+              @click="stepFive"
             />
           </q-card-actions>
         </q-card>
@@ -459,23 +372,20 @@
           </q-card-header>
           <q-card-section class="q-px-none">
             <q-input
-              v-model="text"
-              placeholder="Emergency"
+              v-model="goalName"
               hint="Goal Name"
               :dense="dense"
               disable
               readonly
             />
             <q-input
-              v-model="text"
-              placeholder="Ksh 1,000"
+              v-model="targetAmount"
               hint="Monthly Saving"
               :dense="dense"
               disable
               readonly
             />
             <q-input
-              v-model="text"
               placeholder="3 months"
               hint="Target Period"
               :dense="dense"
@@ -483,8 +393,7 @@
               readonly
             />
             <q-input
-              v-model="text"
-              placeholder="Ksh 3,000"
+              v-model="goalStore.targetAmount"
               hint="Target Amount"
               :dense="dense"
               disable
@@ -496,15 +405,14 @@
               <h6 class="text-subtitle2 text-grey-5">Autosave</h6>
               <q-toggle
                 keep-color
-                v-model="toggle"
+                v-model="goalStore.autoSave"
                 color="primary"
                 switch-label
                 class="q-mt-lg"
               />
               <q-input
-                v-model="text"
-                placeholder="30/12/2024"
-                hint=" Deductin Date"
+                v-model="goalStore.deductDate"
+                hint=" Deduction Date"
                 :dense="dense"
                 disable
                 readonly
@@ -514,14 +422,13 @@
               <h6 class="text-subtitle2 text-grey-5">Reminder</h6>
               <q-toggle
                 keep-color
-                v-model="toggle"
+                v-model="setReminder"
                 color="primary"
                 switch-label
                 class="q-mt-lg"
               />
               <q-input
-                v-model="text"
-                placeholder="30/12/2024"
+                v-model="goalStore.deductDate"
                 hint=" Deductin Date"
                 :dense="dense"
                 disable
@@ -545,7 +452,7 @@
               color="primary"
               label="Set Goal"
               v-close-popup
-              @click="summary = false"
+              @click="createSaving"
             />
           </q-card-actions>
         </q-card>
@@ -576,7 +483,9 @@
                         <q-icon color="red" name="power" />
                       </q-item-section>
 
-                      <q-item-section class="text-red">Logout</q-item-section>
+                      <q-item-section class="text-red" @click="handleLogout"
+                        >Logout</q-item-section
+                      >
                     </q-item>
                     <q-item clickable v-ripple>
                       <q-item-section avatar>
@@ -653,16 +562,107 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useQuasar } from "quasar";
+import axios from "../axios";
+import { useGoalStore } from "src/store/goalStore";
+import { onMounted, ref } from "vue";
+import { useUserStore } from "src/store/user";
 
 const dialog = ref(false);
 const toggle = ref(false);
+const goalName = ref("");
+const targetAmount = ref(0);
+const interest = ref("3");
+const setReminder = ref(false);
 const secondDialog = ref(false);
 const prompt = ref(false);
-const date = ref("2019/02/01");
-const reminder = ref(false);
+const date = ref("");
+const deduct = ref(false);
+const deductDate = ref("");
+const createReminder = ref(false);
 const card = ref(false);
 const summary = ref(false);
+const goalStore = useGoalStore();
+const $q = useQuasar();
+const store = useUserStore();
+const user = ref(null);
+const rows = ref([]);
+
+const nextStep = () => {
+  goalStore.goalType = toggle.value;
+  goalStore.interest = interest.value;
+  secondDialog.value = true;
+  goalStore.nextStep();
+};
+
+const stepTwo = () => {
+  goalStore.goalName = goalName.value;
+  goalStore.targetAmount = targetAmount.value;
+  dialog.value = false;
+  secondDialog.value = false;
+  prompt.value = true;
+  goalStore.nextStep();
+};
+
+const stepThree = () => {
+  goalStore.startDate = date.value;
+  dialog.value = false;
+  secondDialog.value = false;
+  prompt.value = false;
+  createReminder.value = true;
+  console.log(date);
+  goalStore.nextStep();
+};
+
+const stepFour = () => {
+  goalStore.reminder = setReminder.value;
+  dialog.value = false;
+  secondDialog.value = false;
+  card.value = true;
+  goalStore.nextStep();
+};
+const stepFive = () => {
+  goalStore.deductDate = deductDate.value;
+  goalStore.autoSave = deduct.value;
+  summary.value = true;
+  goalStore.nextStep();
+};
+
+const fetchUser = async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.currentUser;
+    rows.value = store.currentUser.savingsGoals;
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+onMounted(fetchUser);
+const createSaving = async () => {
+  try {
+    const response = await axios.post("/setgoal", {
+      userId: user.value.id,
+      ...goalStore.$state,
+    });
+    if (response.status === 201) {
+      summary.value = false;
+      $q.notify({ type: "positive", message: "Goal saved successfully!" });
+      goalStore.resetSteps();
+      await fetchUser();
+    } else {
+      $q.notify({ type: "negative", message: "Goal saving not added!" });
+    }
+  } catch (error) {
+    $q.notify({ type: "negative", message: `Error: ${error.message}` });
+    console.error("Error creating saving goal:", error);
+  }
+};
+
+const handleLogout = () => {
+  store.logout();
+  router.push("/login");
+};
 </script>
 
 <style scoped>

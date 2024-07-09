@@ -11,24 +11,9 @@
         class="q-mx-lg flex column justify-between"
         style="height: 20rem; width: 11/12"
       >
-        <div style="display: flex; width: 100%; justify-content: space-between">
+        <div style="display: flex; width: 100%; justify-content: center">
           <q-input
             v-model="pin"
-            placeholder="*"
-            class="q-ml-sm text-center flex justify-center items-center"
-          />
-          <q-input
-            v-model="text"
-            placeholder="*"
-            class="q-ml-sm text-center flex justify-center items-center"
-          />
-          <q-input
-            v-model="text"
-            placeholder="*"
-            class="q-ml-sm text-center flex justify-center items-center"
-          />
-          <q-input
-            v-model="text"
             placeholder="*"
             class="q-ml-sm text-center flex justify-center items-center"
           />

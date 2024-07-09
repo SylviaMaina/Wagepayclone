@@ -51,7 +51,7 @@ const routes = [
         component: () => import("pages/Salary-advance.vue"),
       },
       {
-        path: "/goal",
+        path: "/goal/:goalId",
         name: "Goal",
         component: () => import("pages/Goal-page.vue"),
       },

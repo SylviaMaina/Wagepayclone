@@ -2,11 +2,11 @@
   <q-dialog v-model="dialog" position="bottom">
     <q-card class="q-pa-lg">
       <q-card-header>
-        <h6>Contributions : 10,000</h6>
+        <h6>Total target amount : {{ info.targetAmount }}</h6>
       </q-card-header>
       <q-card-section>
-        <q-input label="Amount" hint="Ksh 1,000" />
-        <q-select v-model="model" :options="options" label="Top-up From" />
+        <q-input label="Amount" hint="Ksh 1,000" v-model="amount" />
+        <q-select v-model="source" :options="options" label="Top-up From" />
       </q-card-section>
       <q-card-actions class="bg-white text-primary flex justify-center q-my-lg">
         <q-btn
@@ -21,7 +21,7 @@
           color="primary"
           label="Continue"
           v-close-popup
-          @click="authDialog = true"
+          @click="Save"
         />
       </q-card-actions>
     </q-card>
@@ -87,10 +87,7 @@
           color="primary"
           label="Continue"
           v-close-popup
-          @click="
-            cancel = false;
-            confirm = true;
-          "
+          @click="clearLoan"
         />
       </q-card-actions>
     </q-card>
@@ -105,7 +102,8 @@
     <q-card style="height: 10rem; border-radius: 1rem">
       <q-card-section class="q-pt-none text-center q-mt-xl">
         <h6 class="text-subtitle2 text-grey-7">
-          Your emergency saving of Ksh 10,000 is now available for withdrawal
+          Your emergency saving of Ksh {{ user.goalProgress }} is now available
+          for withdrawal
         </h6>
       </q-card-section>
     </q-card>
@@ -116,7 +114,7 @@
         show-value
         font-size="10px"
         class="q-ma-md"
-        v-model="value"
+        v-model="progress"
         size="250px"
         :thickness="0.25"
         color="primary"
@@ -131,12 +129,14 @@
             justify-content: center;
           "
         >
-          <h6 class="text-h4 text-bold text-primary">60%</h6>
+          <h6 class="text-h4 text-bold text-primary">
+            {{ progress.toFixed(0) }}%
+          </h6>
           <h6
             class="text-subtitle2 text-grey-8 q-mt-sm"
             style="font-size: 0.8rem"
           >
-            Ksh 2,000 of Ksh 12,000
+            Ksh {{ info.goalProgress }} of Ksh {{ info.targetAmount }}
           </h6>
           <h6 class="text-subtitle2 text-grey-8 q-mb-sm">Mature in 65 days</h6>
           <q-icon name="lock" size="1.2rem" />
@@ -169,7 +169,7 @@
     </div>
     <div>
       <q-table
-        title="Emergency Goal"
+        :title="info.goalName"
         :rows="rows"
         :columns="columns"
         row-key="name"
@@ -185,10 +185,17 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useQuasar } from "quasar";
+import axios from "../axios";
+import { useUserStore } from "src/store/user";
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 const options = ["Card", "Mobile"];
-
-const value = 20;
+const store = useUserStore();
+const user = ref(null);
+const info = ref({});
+const amount = ref(0);
+const source = ref("");
 const toggle = ref(true);
 const filter = ref("");
 const label = "AutoSave";
@@ -196,15 +203,91 @@ const dialog = ref(false);
 const authDialog = ref(false);
 const cancel = ref(false);
 const confirm = ref(false);
+const route = useRoute();
+const $q = useQuasar();
+const rows = ref([]);
+const router = useRouter();
+
+const fetchUser = async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.currentUser.id;
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+onMounted(fetchUser);
+
+const savingsId = route.params.goalId;
+
+console.log(route.params);
+
+const getDetails = async () => {
+  try {
+    const response = await axios.get(`/savings/${savingsId}`);
+
+    if (response.status === 200) {
+      authDialog.value = false;
+      info.value = response.data.savingsGoal;
+      rows.value = response.data.savingsGoal.savings;
+    } else {
+      authDialog.value = false;
+      console.log("Unexpected status:", response.status);
+    }
+  } catch (error) {
+    authDialog.value = false;
+    console.error("Error:", error.message);
+  }
+};
+
+onMounted(getDetails);
+
+const Save = async () => {
+  try {
+    const response = await axios.post("/save", {
+      userId: user.value,
+      source: source.value,
+      amount: amount.value,
+      savingsId: savingsId,
+    });
+    if ((response.status = 200)) {
+      $q.notify({ type: "positive", message: "Goal saved successfully!" });
+      getDetails();
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+const clearLoan = async () => {
+  try {
+    const response = await axios.post("/clear-saving", {
+      userId: user.value,
+      savingsId: savingsId,
+    });
+    if ((response.status = 200)) {
+      $q.notify({ type: "positive", message: "Goal deleted successfully!" });
+      cancel.value = false;
+      router.push("/savings");
+      getDetails();
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+const progress = computed(() => {
+  if (!info.value || !info.value.targetAmount) return 0;
+  return (info.value.goalProgress / info.value.targetAmount) * 100;
+});
+
 const columns = [
   {
     name: "Date",
     required: true,
     label: "Date",
     align: "left",
-    field: (row) => row.Date,
-    format: (val) => `${val}`,
-    sortable: true,
+    field: (row) => row.date,
   },
   {
     name: "Amount",
@@ -212,34 +295,14 @@ const columns = [
     label: "Amount",
     field: "Amount",
     sortable: true,
-  },
-  { name: "Total", label: "Total", field: "Total", sortable: true },
-];
-const rows = [
-  {
-    Date: "12 / 12 / 2024",
-    Amount: 159,
-    Total: 6.0,
+    field: (row) => row.amount,
   },
   {
-    Date: "12 / 12 / 2024",
-    Amount: 237,
-    Total: 9.0,
-  },
-  {
-    Date: "12 / 12 / 2024",
-    Amount: 262,
-    Total: 16.0,
-  },
-  {
-    Date: "12 / 12 / 2024",
-    Amount: 305,
-    Total: 3.7,
-  },
-  {
-    Date: "12 / 12 / 2024",
-    Amount: 356,
-    Total: 16.0,
+    name: "Total",
+    label: "Total",
+    field: "Total",
+    sortable: true,
+    field: (row) => row.source,
   },
 ];
 </script>

@@ -1,7 +1,11 @@
 <template>
   <RequestForm v-model:modelValue="prompt" />
   <div class="q-pa-md" v-if="user">
-    <div class="q-pa-md flex flex-center">
+    <div
+      class="q-pa-md flex flex-center"
+      v-for="(advance, index) in user.salaryAdvances"
+      :key="index"
+    >
       <q-knob
         show-value
         font-size="10px"
@@ -22,19 +26,19 @@
           "
         >
           <h6 class="text-subtitle2 text-grey-8 q-mb-sm">
-            {{ user.availableCredit }} Credit available
+            {{ advance.remainingAmount }} Credit available
           </h6>
           <h6 class="text-h4 text-bold text-primary">
             {{ value.toFixed(0) }}%
           </h6>
           <h6 class="text-subtitle2 text-grey-8 q-mt-sm">
-            {{ user.borrowedAmount }} Credited
+            {{ advance.borrowedAmount }} Credited
           </h6>
         </div>
       </q-knob>
     </div>
     <div>
-      <q-tabs v-model="tab" class="bg-transparent">
+      <q-tabs class="bg-transparent">
         <q-tab
           name="Borrow"
           icon="payments"
@@ -83,9 +87,9 @@
     </div>
   </div>
   <q-dialog v-model="pay" position="bottom">
-    <q-card class="q-pa-lg">
-      <div>
-        <h6>Total Credit: {{ user.borrowedAmount }}</h6>
+    <q-card class="q-pa-lg" v-if="user">
+      <div v-for="(advance, index) in user.salaryAdvances" :key="index">
+        <h6>Total Credit: {{ advance.borrowedAmount }}</h6>
       </div>
       <q-input v-model="WAmount" label="Amount" placeholder="Ksh 1,000" />
       <q-select
@@ -126,7 +130,7 @@
 import { useQuasar } from "quasar";
 import axios from "../axios";
 import { useUserStore } from "../store/user";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import RequestForm from "src/components/Request-form.vue";
 
 // Percentage value of the progress bar
@@ -140,19 +144,45 @@ const pay = ref(false);
 const WAmount = ref();
 const WOption = ref();
 const $q = useQuasar();
+const columns = ref([
+  {
+    name: "repaymentId",
+    align: "center",
+    label: "Id",
+    field: (row) => row.repaymentId,
+    sortable: true,
+  },
+  {
+    name: "date",
+    label: "Repayment Date",
+    align: "center",
 
-onMounted(async () => {
+    field: (row) => row.date,
+    sortable: true,
+  },
+  {
+    name: "amount",
+    label: "Amount ",
+    align: "center",
+    field: (row) => row.amount,
+  },
+]);
+const rows = ref([]);
+
+const fetchUserProfile = async () => {
   try {
     await store.fetchUserProfile();
-    user.value = store.user;
+    user.value = store.currentUser;
+    rows.value = store.currentUser.salaryAdvances[0].repayments;
   } catch (error) {
     console.log("Error", error);
   }
-});
+};
+onMounted(fetchUserProfile);
 
 const requestAdvance = async () => {
   try {
-    if (user.value.salaryAdvances.remainingAmount != 0) {
+    if (user.value.salaryAdvances[0].borrowedAmount != 0) {
       $q.notify({
         type: "negative",
         message: "Please clear existing loan to request a new one",
@@ -197,8 +227,7 @@ const PayLoan = async () => {
 
     if (response.status === 200) {
       $q.notify({ type: "positive", message: "Advance paid successfully" });
-      user.value.borrowedAmount = response.data.user.borrowedAmount;
-      user.value.availableCredit = response.data.user.availableCredit;
+      await fetchUserProfile();
       pay.value = false;
     }
   } catch (error) {
@@ -206,59 +235,11 @@ const PayLoan = async () => {
   }
 };
 
-const value = (store.user.borrowedAmount / store.user.eligibleAdvance) * 100;
-const columns = [
-  {
-    name: "Requested",
-    required: true,
-    label: "Requested",
-    align: "left",
-    field: (row) => row.Requested,
-    format: (val) => `${val}`,
-    sortable: true,
-  },
-  {
-    name: "Approved",
-    align: "center",
-    label: "Approved",
-    field: "Approved",
-    sortable: true,
-  },
-  { name: "Paid", label: "Paid", field: "Paid", sortable: true },
-  { name: "Actions", label: "Actions ", field: "Actions" },
-];
-const rows = [
-  {
-    Requested: "Frozen Yogurt",
-    Approved: 159,
-    Paid: 6.0,
-    Actions: 24,
-  },
-  {
-    Requested: "Ice cream sandwich",
-    Approved: 237,
-    Paid: 9.0,
-    Actions: 37,
-  },
-  {
-    Requested: "Eclair",
-    Approved: 262,
-    Paid: 16.0,
-    Actions: 23,
-  },
-  {
-    Requested: "Cupcake",
-    Approved: 305,
-    Paid: 3.7,
-    Actions: 67,
-  },
-  {
-    Requested: "Gingerbread",
-    Approved: 356,
-    Paid: 16.0,
-    Actions: 49,
-  },
-];
+const value = computed(() => {
+  const borrowedAmount = store.user.salaryAdvances[0]?.borrowedAmount || 0;
+  const totalAmount = store.user.salaryAdvances[0]?.amount || 1;
+  return (borrowedAmount / totalAmount) * 100;
+});
 
 const option = [
   {

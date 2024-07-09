@@ -28,7 +28,9 @@
                         <q-icon color="red" name="power" />
                       </q-item-section>
 
-                      <q-item-section class="text-red">Logout</q-item-section>
+                      <q-item-section class="text-red" @click="handleLogout"
+                        >Logout</q-item-section
+                      >
                     </q-item>
                     <q-item clickable v-ripple>
                       <q-item-section avatar>
@@ -118,14 +120,14 @@ const $q = useQuasar();
 onMounted(async () => {
   try {
     await store.fetchUserProfile();
-    user.value = store.user;
+    user.value = store.currentUser;
   } catch (error) {
     console.log("Error", error);
   }
 });
 const requestAdvance = async () => {
   try {
-    if (user.value.salaryAdvances.remainingAmount != 0) {
+    if (user.value.salaryAdvances[0].borrowedAmount != 0) {
       $q.notify({
         type: "negative",
         message: "Please clear existing loan to request a new one",
@@ -136,6 +138,11 @@ const requestAdvance = async () => {
   } catch (error) {
     console.log("Error", error);
   }
+};
+
+const handleLogout = () => {
+  store.logout();
+  router.push("/login");
 };
 </script>
 

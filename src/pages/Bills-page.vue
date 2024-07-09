@@ -79,6 +79,7 @@
         flex-direction: column;
         justify-content: space-between;
       "
+      v-if="user"
     >
       <q-card-section align="right">
         <q-icon name="add" size="30px" @click="addCard = true" />
@@ -93,23 +94,13 @@
             justify-content: space-between;
           "
         >
-          <q-item>
+          <q-item v-for="(bill, index) in bills" :key="index">
             <q-item-section avatar>
               <q-icon size="30px" name="money" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>Shop Rent</q-item-label>
-              <q-item-label caption>Ksh 50,000</q-item-label>
-            </q-item-section>
-            <q-item-section side><q-checkbox /> </q-item-section>
-          </q-item>
-          <q-item>
-            <q-item-section avatar>
-              <q-icon size="30px" name="money" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>House Rent</q-item-label>
-              <q-item-label caption>Ksh 20,000</q-item-label>
+              <q-item-label>{{ bill.billName }}</q-item-label>
+              <q-item-label caption>Ksh {{ bill.amount }}</q-item-label>
             </q-item-section>
             <q-item-section side><q-checkbox /> </q-item-section>
           </q-item>
@@ -117,7 +108,7 @@
       </q-card-section>
       <q-card-section align="center">
         <h6 class="text-subtitle2 text-grey-9">Total</h6>
-        <h6 class="text-h6 text-weight-semibold">Ksh 50,000</h6>
+        <h6 class="text-h6 text-weight-semibold">Ksh {{ user.billTotal }}</h6>
       </q-card-section>
 
       <q-card-actions align="center">
@@ -238,11 +229,11 @@
           justify-content: space-between;
         "
       >
-        <q-input label="Bill Name" />
-        <q-input label="Account Number" />
-        <q-input label="Amount" />
-        <q-input label="Recepient Phone(optional)" />
-        <q-input label="Recepient Email" />
+        <q-input label="Bill Name" v-model="billName" />
+        <q-input label="Account Number" v-model="accNumber" />
+        <q-input label="Amount" v-model="amount" />
+        <q-input label="Recepient Phone(optional)" v-model="recepientphone" />
+        <q-input label="Recepient Email" v-model="recepientEmail" />
       </q-card-section>
       <q-card-actions align="center" class="bg-white text-primary q-mb-lg">
         <q-btn
@@ -250,7 +241,7 @@
           style="width: 10rem; height: 2rem; font-size: 1rem"
           color="primary"
           label="Add Bill"
-          @click="authDialog = true"
+          @click="newBill"
           v-close-popup
         />
       </q-card-actions>
@@ -265,12 +256,16 @@
       margin-top: 10px;
     "
   >
-    <q-card class="my-card bg-white" style="height: 10rem; position: relative">
+    <q-card
+      v-if="user"
+      class="my-card bg-white"
+      style="height: 10rem; position: relative"
+    >
       <q-card-section align="center">
-        <h6 class="text-subtitle1 text-grey-8">Total Savings</h6>
+        <h6 class="text-subtitle1 text-grey-8">Total Bills</h6>
         <h6 class="q-mt-sm">
           <span :class="{ blurred: !amountVisible }" class="q-mr-lg">
-            Ksh. 12,000
+            Ksh. {{ user.billTotal }}
           </span>
           <q-icon
             :name="amountVisible ? 'visibility_off' : ' visibility'"
@@ -286,39 +281,31 @@
         </h6>
       </q-card-actions>
     </q-card>
-    <div>
+    <div v-if="bills">
       <q-tabs class="bg-transparent q-my-lg">
         <q-tab
-          name="Electricity"
+          v-for="(bill, index) in bills"
+          :key="index"
+          :name="bill.billName"
           icon="timeline"
-          label="Electricity"
+          :label="bill.billName"
           class="text-grey-9 bg-transparent"
         />
-        <q-tab
-          name="Cable"
-          icon="paid"
-          label="Cable"
-          class="text-grey-9 bg-transparent"
-        />
-        <q-tab
-          name="Rent"
-          icon="savings"
-          label="Rent"
-          @click="inception = true"
-          class="text-grey-9 bg-transparent"
-        />
-        <q-tab
-          name="All"
-          icon="apps"
-          label="All"
-          @click="inception = true"
-          class="text-grey-9 bg-transparent"
-        />
+        <q-tab name="All" icon="apps" label="All" />
       </q-tabs>
     </div>
+
     <q-card class="my-card bg-warning" style="height: 10rem">
       <q-card-header class="q-ml-lg">
-        <h6 class="text-subtitle1 q-mt-sm">Due Bills</h6>
+        <h6 class="text-subtitle1 q-mt-sm flex justify-between items-center">
+          Due Bills
+          <q-icon
+            name="add"
+            @click="inception = true"
+            size="20px"
+            class="text-grey-9 bg-transparent centered q-px-sm"
+          />
+        </h6>
         <h6 class="text-subtitle2 text-grey-8">
           Please pay your water bill before 22 Jul 2022
         </h6>
@@ -337,21 +324,10 @@
       </q-card-section>
     </q-card>
   </div>
-  <div class="flex justify-between q-mt-xl bg-transparent">
-    <h6
-      class="text-red-9 text-subtitle1 text-center"
-      style="border-right: 1.5px solid gray; width: 50%"
-    >
-      Upcoming
-    </h6>
-    <h6 class="text-gray-9 text-subtitle1 text-center" style="width: 50%">
-      Previous
-    </h6>
-  </div>
 
   <div class="q-mt-xl">
     <q-table
-      :rows="rows"
+      :rows="bills"
       :columns="columns"
       row-key="name"
       flat
@@ -363,17 +339,18 @@
       <template v-slot:body="props">
         <q-tr :props="props">
           <q-td key="Name" :props="props">
-            {{ props.row.Name }}
+            {{ props.row.billName }}
           </q-td>
           <q-td key="Amount" :props="props">
-            {{ props.row.Amount }}
+            {{ props.row.amount }}
           </q-td>
-          <q-td key="DueDate" :props="props">
-            {{ props.row.DueDate }}
-          </q-td>
+
           <q-td key="Actions" :props="props">
-            <h6 @click="secondDialog = true" class="text-subtitle2">
-              {{ props.row.Actions }}
+            <h6
+              @click="payBill(props.row.billId, props.row.amount)"
+              class="text-subtitle2"
+            >
+              Pay
             </h6>
           </q-td>
         </q-tr>
@@ -383,9 +360,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useUserStore } from "src/store/user";
+import axios from "../axios";
+import { onMounted, ref } from "vue";
+import { useQuasar } from "quasar";
 
-const standard = ref(2);
 const dialog = ref(false);
 const withdraw = ref(false);
 const group = ref(null);
@@ -394,12 +373,67 @@ const inception = ref(false);
 const secondDialog = ref(false);
 const authDialog = ref(false);
 const addCard = ref(false);
+const billName = ref("");
+const accNumber = ref("");
+const amount = ref();
+const recepientphone = ref("");
+const recepientEmail = ref("");
+const store = useUserStore();
+const user = ref(null);
+const bills = ref([]);
+const $q = useQuasar();
 
 const amountVisible = ref(true);
 const filter = ref("");
 function toggleVisibility() {
   amountVisible.value = !amountVisible.value;
 }
+
+const fetchUser = async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.currentUser;
+    bills.value = store.currentUser.bills;
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+onMounted(fetchUser);
+
+const newBill = async () => {
+  try {
+    const response = await axios.post("/setbill", {
+      userId: user.value.id,
+      billName: billName.value,
+      accNumber: accNumber.value,
+      amount: amount.value,
+      recepientphone: recepientphone.value,
+      recepientEmail: recepientEmail.value,
+    });
+    if ((response.status = 200)) {
+      $q.notify({ type: "positive", message: "Bill saved successfully!" });
+      fetchUser();
+    }
+  } catch (error) {}
+};
+
+const payBill = async (billId, amount) => {
+  try {
+    const response = await axios.post("/paybill", {
+      billId: billId,
+      amount: amount,
+      source: "card",
+      userId: user.value.id,
+    });
+    if ((response.status = 200)) {
+      $q.notify({ type: "positive", message: "Bill paid successfully!" });
+      fetchUser();
+    }
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
 
 const columns = [
   {
@@ -419,27 +453,7 @@ const columns = [
     field: "Amount",
     sortable: true,
   },
-  {
-    name: "DueDate",
-    label: "Due Date",
-    field: "DueDate",
-    sortable: true,
-  },
   { name: "Actions", label: "Actions ", field: "Actions" },
-];
-const rows = [
-  {
-    Name: "Electricity",
-    Amount: 1590,
-    DueDate: "12/12/2024",
-    Actions: "Pay",
-  },
-  {
-    Name: "Rent",
-    Amount: 23700,
-    DueDate: "01/12/2024",
-    Actions: "Pay",
-  },
 ];
 </script>
 

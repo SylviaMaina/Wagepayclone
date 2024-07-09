@@ -8,8 +8,9 @@
       "pin": "$2a$10$7b188V2WxivJA1Sc4MWVaeEz4z0oMvcU1NrhcMMK9xiQK9IYntFZ6",
       "name": "Sylvia Maina",
       "profilePictureUrl": "https://example.com/profile.jpg",
-      "availableAmount": 18000,
-      "savings": 12000,
+      "availableAmount": 21000,
+      "savings": 9000,
+      "billTotal": 2500,
       "eligibleAdvance": 50000,
       "borrowedAmount": 20000,
       "availableCredit": 30000,
@@ -56,6 +57,114 @@
           "type": "Mobile",
           "date": "2024-07-04",
           "amount": 1083
+        },
+        {
+          "id": "8",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 1000
+        },
+        {
+          "id": "9",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 500
+        },
+        {
+          "id": "10",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 200
+        },
+        {
+          "id": "11",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 300
+        },
+        {
+          "id": "12",
+          "type": "Loan Request",
+          "date": "2024-07-05",
+          "amount": 5000
+        },
+        {
+          "id": "13",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 1000
+        },
+        {
+          "id": "14",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 1000
+        },
+        {
+          "id": "15",
+          "type": "Card A",
+          "date": "2024-07-05",
+          "amount": 1000
+        },
+        {
+          "id": "16",
+          "type": "Collection",
+          "date": "2024-07-05",
+          "amount": 2000
+        },
+        {
+          "id": "17",
+          "type": "Card",
+          "date": "2024-07-08",
+          "amount": 500
+        },
+        {
+          "id": "18",
+          "type": "Mobile",
+          "date": "2024-07-09",
+          "amount": 10000
+        },
+        {
+          "id": "19",
+          "type": "Card",
+          "date": "2024-07-09",
+          "amount": 500
+        },
+        {
+          "id": "20",
+          "type": "Card",
+          "date": "2024-07-09",
+          "amount": 10000
+        },
+        {
+          "id": "21",
+          "type": "Card",
+          "date": "2024-07-09",
+          "amount": 1500
+        },
+        {
+          "id": "22",
+          "type": "card",
+          "date": "2024-07-09",
+          "amount": 1000
+        },
+        {
+          "id": "23",
+          "type": "card",
+          "date": "2024-07-09",
+          "amount": 1500
+        },
+        {
+          "id": "24",
+          "type": "card",
+          "date": "2024-07-09",
+          "amount": 1500
+        },
+        {
+          "id": "25",
+          "type": "card",
+          "date": "2024-07-09",
+          "amount": 1500
         }
       ],
       "salaryAdvances": [
@@ -64,15 +173,226 @@
           "amount": 5000,
           "dueDate": "2024-08-01",
           "remainingAmount": 3000,
+          "borrowedAmount": 2000,
+          "requests": [
+            {
+              "repaymentId": "1",
+              "date": "2024-07-25",
+              "amount": 5000
+            }
+          ],
           "repayments": [
             {
               "repaymentId": "1",
               "date": "2024-07-05",
-              "amount": 2000
+              "amount": 500
+            },
+            {
+              "repaymentId": "2",
+              "date": "2024-07-05",
+              "amount": 200
+            },
+            {
+              "repaymentId": "3",
+              "date": "2024-07-05",
+              "amount": 300
+            },
+            {
+              "repaymentId": "4",
+              "date": "2024-07-05",
+              "amount": 1000
+            },
+            {
+              "repaymentId": "5",
+              "date": "2024-07-05",
+              "amount": 1000
+            },
+            {
+              "repaymentId": "6",
+              "date": "2024-07-05",
+              "amount": 1000
+            }
+          ]
+        }
+      ],
+      "savingsGoals": [
+        {
+          "savingsId": "1eb9c0ce-7d31-43e5-9cca-07c13edc26ea1",
+          "goalType": true,
+          "startDate": "2024-07-31",
+          "targetAmount": 30000,
+          "autoSave": true,
+          "reminder": true,
+          "deductDate": "2024-07-31",
+          "goalName": "New course",
+          "interest": "6",
+          "goalProgress": 5000,
+          "savings": []
+        },
+        {
+          "savingsId": "1eb9c0ce-7d31-43e5-9cca-07c13edc26ea2",
+          "goalType": true,
+          "startDate": "2024-07-31",
+          "targetAmount": 30000,
+          "autoSave": true,
+          "reminder": true,
+          "deductDate": "2024-07-31",
+          "goalName": "Emergency Goal",
+          "interest": "6",
+          "goalProgress": 12000,
+          "savings": [
+            {
+              "savingId": "1",
+              "date": "2024-07-09",
+              "amount": 10000,
+              "source": "Mobile"
+            }
+          ]
+        },
+        {
+          "savingsId": "1eb9c0ce-7d31-43e5-9cca-07c13edc26ea4",
+          "goalType": true,
+          "startDate": "2024-07-31",
+          "targetAmount": 30000,
+          "autoSave": true,
+          "reminder": true,
+          "deductDate": "2024-07-31",
+          "goalName": "Buy TV",
+          "interest": "6",
+          "goalProgress": 10000,
+          "savings": [
+            {
+              "savingId": "1",
+              "date": "2024-07-09",
+              "amount": 10000,
+              "source": "Card"
+            }
+          ]
+        }
+      ],
+      "bills": [
+        {
+          "billId": "5459c566-583f-4d1d-be12-4888f15de196",
+          "billName": "Water bill",
+          "accNumber": "444400",
+          "amount": 2000,
+          "recepientphone": "0714826358",
+          "recepientEmail": "nwsc@gmail.com",
+          "payments": [
+            {
+              "billId": "1",
+              "date": "2024-07-09",
+              "amount": 1000,
+              "source": "card"
+            }
+          ]
+        },
+        {
+          "billId": "f097bf6f-5f3a-40c6-a50d-ccaf5d393722",
+          "billName": "Electricity",
+          "accNumber": "888888",
+          "amount": 1500,
+          "recepientphone": "0714826358",
+          "recepientEmail": "nwsc@gmail.com",
+          "payments": [
+            {
+              "billId": "1",
+              "date": "2024-07-09",
+              "amount": 1500,
+              "source": "card"
             }
           ]
         }
       ]
+    },
+    {
+      "id": "d2fd4634-9a79-487b-ae8f-72861015c751",
+      "email": "sharon@gmail.com",
+      "idNumber": "123456",
+      "phoneNumber": "0721943588",
+      "profilePictureUrl": "https://example.com/profile.jpg",
+      "availableAmount": 50000,
+      "savings": 3000,
+      "eligibleAdvance": 15000,
+      "borrowedAmount": 0,
+      "availableCredit": 5000,
+      "transactions": [
+        {
+          "id": "1",
+          "type": "Collection",
+          "date": "2024-07-09",
+          "amount": 50000
+        },
+        {
+          "id": "2",
+          "type": "Loan Request",
+          "date": "2024-07-09",
+          "amount": 2000
+        },
+        {
+          "id": "3",
+          "type": "Mobile",
+          "date": "2024-07-09",
+          "amount": 3000
+        },
+        {
+          "id": "4",
+          "type": "card",
+          "date": "2024-07-09",
+          "amount": 1500
+        }
+      ],
+      "salaryAdvances": [
+        {
+          "advanceId": "1",
+          "amount": 5000,
+          "dueDate": "2024-08-01",
+          "remainingAmount": 3000,
+          "borrowedAmount": 2000,
+          "requests": [
+            {
+              "repaymentId": "1",
+              "date": "2024-07-19",
+              "amount": 2000
+            }
+          ]
+        }
+      ],
+      "savingsGoals": [
+        {
+          "savingsId": "04b53b7a-1628-4f52-90e3-36044946e92f",
+          "goalType": true,
+          "startDate": "2024-07-31",
+          "targetAmount": "50000",
+          "autoSave": true,
+          "reminder": true,
+          "deductDate": "2024-07-31",
+          "goalName": "Emergency Fund",
+          "interest": "6",
+          "goalProgress": 3000,
+          "savings": [
+            {
+              "savingId": "1",
+              "date": "2024-07-09",
+              "amount": 3000,
+              "source": "Mobile"
+            }
+          ]
+        }
+      ],
+      "pin": "$2a$10$mwzioDs0B/eDaog8BDTZROy8trEVDphyOqliZjeiQ2knSKfir1vo.",
+      "bills": [
+        {
+          "billId": "1f244ea2-bd3e-44e7-a231-87a0356db120",
+          "billName": "Electricity",
+          "accNumber": "888888",
+          "amount": 1500,
+          "recepientphone": "0714826358",
+          "recepientEmail": "nwsc@gmail.com",
+          "payments": []
+        }
+      ],
+      "billTotal": 1500
     }
   ]
 }

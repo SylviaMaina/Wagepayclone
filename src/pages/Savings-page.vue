@@ -13,7 +13,7 @@
         <h6 class="text-subtitle1 text-grey-8">Total Savings</h6>
         <h6 class="q-mt-sm">
           <span :class="{ blurred: !amountVisible }" class="q-mr-lg">
-            Ksh. 12,000
+            Ksh. {{ user.savings }}
           </span>
           <q-icon
             :name="amountVisible ? 'visibility_off' : ' visibility'"
@@ -42,7 +42,7 @@
 
   <div class="q-mt-lg">
     <q-table
-      title="Your Emergency Goals"
+      title="Your Saving Goals"
       :rows="rows"
       :columns="columns"
       row-key="name"
@@ -64,17 +64,19 @@
 
       <template v-slot:body="props">
         <q-tr :props="props">
-          <q-td key="Goal" :props="props">
-            {{ props.row.Goal }}
+          <q-td key="goalName" :props="props">
+            {{ props.row.goalName }}
           </q-td>
-          <q-td key="GoalTarget" :props="props">
-            {{ props.row.GoalTarget }}
+          <q-td key="targetAmount" :props="props">
+            {{ props.row.targetAmount }}
           </q-td>
-          <q-td key="GoalProgress" :props="props">
-            {{ props.row.GoalProgress }}
+          <q-td key="goalProgress" :props="props">
+            {{ props.row.goalProgress }}
           </q-td>
           <q-td key="Actions" :props="props">
-            <router-link to="/goal">{{ props.row.Actions }}</router-link>
+            <router-link :to="`/goal/${props.row.savingsId}`"
+              ><q-icon name="more_horiz" size="30px" color="black"
+            /></router-link>
           </q-td>
         </q-tr>
       </template>
@@ -83,9 +85,13 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { useUserStore } from "src/store/user";
+import { onMounted, ref } from "vue";
 
 const amountVisible = ref(true);
+const store = useUserStore();
+const user = ref("");
+
 const filter = ref("");
 function toggleVisibility() {
   amountVisible.value = !amountVisible.value;
@@ -93,62 +99,44 @@ function toggleVisibility() {
 
 const columns = [
   {
-    name: "Goal",
+    name: "goalName",
     required: true,
     label: "Goal",
     align: "left",
-    field: (row) => row.Goal,
-    format: (val) => `${val}`,
+    field: (row) => row.goalName,
     sortable: true,
   },
 
   {
-    name: "GoalTarget",
+    name: "targetAmount",
     align: "center",
+    align: "left",
     label: "Goal Target",
-    field: "GoalTarget",
+    field: (row) => row.targetAmount,
     sortable: true,
   },
   {
-    name: "GoalProgress",
+    name: "goalProgress",
     label: "Goal Progress",
-    field: "GoalProgress",
+    align: "left",
+    field: (row) => row.goalProgress,
     sortable: true,
   },
-  { name: "Actions", label: "Actions ", field: "Actions" },
+  { name: "Actions", label: "Actions ", align: "left", field: "Actions" },
 ];
-const rows = [
-  {
-    Goal: "Frozen Yogurt",
-    GoalTarget: 159,
-    GoalProgress: 6.0,
-    Actions: "view",
-  },
-  {
-    Goal: "Ice cream sandwich",
-    GoalTarget: 237,
-    GoalProgress: 9.0,
-    Actions: "view",
-  },
-  {
-    Goal: "Eclair",
-    GoalTarget: 262,
-    GoalProgress: 16.0,
-    Actions: "view",
-  },
-  {
-    Goal: "Cupcake",
-    GoalTarget: 305,
-    GoalProgress: 3.7,
-    Actions: "view",
-  },
-  {
-    Goal: "Gingerbread",
-    GoalTarget: 356,
-    GoalProgress: 16.0,
-    Actions: "view",
-  },
-];
+const rows = ref([]);
+
+const fetchUser = async () => {
+  try {
+    await store.fetchUserProfile();
+    user.value = store.currentUser;
+    rows.value = store.currentUser.savingsGoals;
+  } catch (error) {
+    console.log("Error", error);
+  }
+};
+
+onMounted(fetchUser);
 </script>
 
 <style lang="scss" scoped>

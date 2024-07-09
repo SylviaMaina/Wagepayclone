@@ -305,8 +305,12 @@
           />
         </q-tabs>
       </div>
-      <q-card class="my-card q-mt-lg">
-        <q-card-section class="my-card">
+      <q-card class="my-card q-mt-lg" v-if="user">
+        <q-card-section
+          class="my-card"
+          v-for="(advance, index) in user.salaryAdvances"
+          :key="index"
+        >
           <div class="flex justify-between">
             <h6>Request Advance</h6>
             <Router-link to="/advance">
@@ -315,11 +319,11 @@
           </div>
           <div>
             <h6 class="text-subtitle2 text-weight-light">
-              You are eligible for kes {{ user.eligibleAdvance }}
+              You are eligible for kes {{ advance.amount }}
             </h6>
             <div>
               <q-linear-progress
-                :value="user.borrowedAmount / user.eligibleAdvance"
+                :value="advance.borrowedAmount / advance.availableCredit"
                 color="primary"
                 track-color="black"
                 rounded
@@ -331,12 +335,12 @@
                 <h6
                   class="text-subtitle2 text-black-2 q-mt-none text-weight-light"
                 >
-                  Borrowed {{ user.borrowedAmount }}
+                  Borrowed {{ advance.borrowedAmount }}
                 </h6>
                 <h6
                   class="text-subtitle2 text-black-2 q-mt-none text-weight-light"
                 >
-                  Available {{ user.availableCredit }}
+                  Available {{ advance.remainingAmount }}
                 </h6>
               </div>
               <h6 class="text-subtitle2 text-weight-bold">Due in 20 days</h6>
@@ -378,22 +382,30 @@
         <q-toolbar class="text-black">
           <q-toolbar-title>Transactions</q-toolbar-title>
         </q-toolbar>
+
         <q-list v-if="user.transactions">
-          <q-item
-            v-for="(transaction, index) in user.transactions"
-            :key="index"
+          <q-virtual-scroll
+            type="table"
+            style="max-height: 500px"
+            :virtual-scroll-item-size="48"
+            :virtual-scroll-sticky-size-start="48"
+            :virtual-scroll-sticky-size-end="32"
+            :items="user.transactions"
+            v-slot="{ item, index }"
           >
-            <q-item-section top class="q-pa-none">
-              <q-icon name="inbox" color="red" size="30px" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ transaction.type }}</q-item-label>
-              <q-item-label caption>{{ transaction.date }}</q-item-label>
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>-ksh {{ transaction.amount }}</q-item-label>
-            </q-item-section>
-          </q-item>
+            <q-item :key="index">
+              <q-item-section top class="q-pa-none">
+                <q-icon name="inbox" color="red" size="30px" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ item.type }}</q-item-label>
+                <q-item-label caption>{{ item.date }}</q-item-label>
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>-ksh {{ item.amount }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-virtual-scroll>
         </q-list>
       </div>
     </div>
@@ -471,8 +483,7 @@ const Withdraw = async () => {
     );
     if (response.status === 200) {
       withdraw.value = false;
-      user.value.availableAmount = response.data.user.availableAmount;
-      user.value.transactions = response.data.user.transactions;
+      await fetchUserProfile();
       $q.notify({ type: "positive", message: "Top-up successful!" });
     }
   } catch (error) {
@@ -480,17 +491,20 @@ const Withdraw = async () => {
     $q.notify({ type: "negative", message: "Top-up failed!" });
   }
 };
-onMounted(async () => {
+const fetchUserProfile = async () => {
   loading.value = true;
   try {
     await store.fetchUserProfile();
-    user.value = store.user;
+    user.value = store.currentUser;
+    console.log(user.value);
   } catch (err) {
     error.value = err.message || "Failed to fetch user profile";
   } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(fetchUserProfile);
 
 const show = () => {
   dialog.value = true;
