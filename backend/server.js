@@ -8,7 +8,7 @@ const port = 3000;
 
 app.use(
   cors({
-    origin: "http://localhost:9000",
+    origin: "https://wagepayclone-epz7.vercel.app",
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
