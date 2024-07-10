@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const authRoutes = require("./backend/routes/auth");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +14,9 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Allow requests with no origin, like mobile apps or curl requests
       if (!origin) return callback(null, true);
+
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
           "The CORS policy for this site does not allow access from the specified origin.";
