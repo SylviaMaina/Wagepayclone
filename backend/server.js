@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
-  "https://wagepayclone-epz7.vercel.app", // Replace with your actual frontend URL
+  "https://wagepayclone-epz7.vercel.app",
   "http://localhost:9000",
 ];
 
