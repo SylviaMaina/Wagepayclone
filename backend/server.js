@@ -1,25 +1,25 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const authRoutes = require("./backend/routes/auth");
+const authRoutes = require("./routes/auth");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
-  "https://wagepayclone-epz7.vercel.app",
+  "https://wagepayclone-epz7.vercel.app", // Replace with your actual frontend URL
   "http://localhost:9000",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin, like mobile apps or curl requests
+      console.log("Origin:", origin); // Logging the origin for debugging
       if (!origin) return callback(null, true);
-
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
           "The CORS policy for this site does not allow access from the specified origin.";
+        console.log(msg, origin); // Logging the error
         return callback(new Error(msg), false);
       }
       return callback(null, true);
